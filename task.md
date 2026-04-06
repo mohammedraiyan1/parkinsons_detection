@@ -1,0 +1,33 @@
+# NeuroCheck Application Task List
+
+- [ ] Planning
+  - [ ] Create implementation plan
+  - [ ] Receive user approval
+- [ ] Backend (Node.js + Express)
+  - [ ] Project setup (TypeScript, Express, Prisma, Redis)
+  - [ ] Database Schema Definition (Prisma)
+  - [ ] Implement Auth flow (JWT, bcrypt, routes)
+  - [ ] Implement Test submission & analysis queueing
+  - [ ] Implement Results history & reporting
+  - [ ] Implement User profile & account management
+- [ ] ML Service (Python FastAPI)
+  - [ ] Project setup (FastAPI, scikit-learn, librosa, etc.)
+  - [ ] Implement analysis endpoints
+  - [ ] Feature extraction logic (tremor, voice, tap, etc.)
+  - [ ] Rule-based scoring or dummy models (for initial MVP)
+- [ ] Mobile App (React Native Expo)
+  - [ ] Project setup (Expo, React Navigation, NativeWind/Tailwind or custom styles)
+  - [ ] Auth Stack (Login, Register, Forgot Password)
+  - [ ] Main Tabs Navigation Setup
+  - [ ] Home Screen (Gauge, History cards, CTA)
+  - [ ] Test Modules
+    - [ ] Tremor Test (DeviceMotion)
+    - [ ] Finger Tap Test
+    - [ ] Spiral Drawing Test (canvas/skia)
+    - [ ] Voice Test (Audio recording)
+    - [ ] Gait Test (DeviceMotion)
+    - [ ] Reaction Time Test
+    - [ ] Handwriting Test
+    - [ ] Balance Test
+  - [ ] Results & History Screens
+  - [ ] Profile Screen

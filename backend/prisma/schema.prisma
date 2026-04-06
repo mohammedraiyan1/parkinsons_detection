@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  dob       DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  sessions  TestSession[]
+  clinicians ClinicianAccess[]
+}
+
+model TestSession {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status    String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  results   TestResult[]
+  riskScore RiskScore?
+}
+
+model TestResult {
+  id          String      @id @default(uuid())
+  sessionId   String
+  session     TestSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  moduleName  String      // "tremor", "finger_tap", etc.
+  rawDataKey  String?     // S3 object key
+  metrics     Json?       // Extracted metrics via ML or basic 
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model RiskScore {
+  id             String      @id @default(uuid())
+  sessionId      String      @unique
+  session        TestSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  compositeScore Float
+  riskLevel      String      // "Low", "Moderate", "High"
+  perTestScores  Json        // Breakdown per module
+  createdAt      DateTime    @default(now())
+}
+
+model ClinicianAccess {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clinicianId String
+  grantedAt   DateTime @default(now())
+}

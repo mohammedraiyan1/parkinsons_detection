@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://myuser:mypassword@postgres:5432/neurocheck?schema=public
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=prod_secret_123
+      - JWT_REFRESH_SECRET=prod_refresh_123
+      - AWS_ACCESS_KEY_ID=mock_key
+      - AWS_SECRET_ACCESS_KEY=mock_secret
+      - AWS_REGION=us-east-1
+      - S3_BUCKET_NAME=neurocheck-mock-bucket
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  ml_service:
+    build: ./ml_service
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  frontend:
+    build: ./web_app
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: neurocheck
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+volumes:
+  postgres_data_prod:

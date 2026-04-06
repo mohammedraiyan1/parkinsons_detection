@@ -1,0 +1,35 @@
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# Secrets & Config
+.env
+.env.*
+!.env.example
+*.log
+
+# Editor
+.vscode/
+.idea/
+*.suo
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+
+# Misc
+.temp/
+.tmp/
+.cache/

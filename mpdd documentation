@@ -1,0 +1,73 @@
+# NeuroCheck - Master Architectural Documentation
+
+## Executive Summary
+NeuroCheck is a full-stack, comprehensive Parkinson's Disease screening application. It is designed to capture, process, and analyze sensor and media data from a patient's device and use Machine Learning algorithms to compute a Parkinson's risk score based on 8 distinct clinical test variants.
+
+This document serves as the master guide to what was built, the exact technology choices made, why they were selected, and how the entire ecosystem runs.
+
+---
+
+## 🏗️ 1. The Technology Stack
+
+### A. The Backend (Core API)
+*   **Language:** Server-side TypeScript (Node.js)
+*   **Framework:** Express.js
+*   **Why?** Express mixed with TypeScript provides an incredibly lightweight, type-safe API that can handle high event concurrency (such as receiving massive arrays of sensor tick data) without blocking the thread.
+*   **Database ORM:** Prisma
+*   **Why?** Prisma is a modern database client that auto-generates TypeScript definitions based on the schema. It prevents SQL injection inherently and provides bulletproof type-safety when interacting with the database.
+*   **Database:** PostgreSQL (Hosted via Supabase)
+*   **Why?** Relational data mapping is crucial for medical histories. We need to strictly enforce the relationship between a `User` (patient) and their multiple `TestSessions` and nested `TestResults`. PostgreSQL enforces stringently typed relations.
+*   **Authentication:** JWT (JSON Web Tokens) with Bcrypt hashing
+*   **Why?** JWTs allow stateless authentication. Because we have multiple microservices, passing a signed token around is far more scalable than maintaining session cookies.
+
+### B. The Machine Learning Microservice
+*   **Language:** Python
+*   **Framework:** FastAPI
+*   **Why?** FastAPI is the industry-standard choice for serving Python ML models asynchronously. It natively supports Pydantic data validation and auto-generates OpenAPI documentation.
+*   **ML Libraries:** scikit-learn, librosa (audio), pandas, numpy, scipy
+*   **Why?** Python is the undisputed king of data science. `librosa` allows us to extract Mel-Frequency Cepstral Coefficients (MFCCs) from voice data. `scipy` is perfect for finding peaks in accelerometer arrays (Tap tests/Tremors), and `scikit-learn` builds the ultimate predictive models. 
+
+### C. The Frontend Interface
+*   **Framework:** React / React Native (Expo)
+*   **Why?** React allows for massive reusable component architectures. We used Expo (React Native) initially to access mobile-native hardware sensors (Accelerometer, Gyroscope). Now, we are pivoting to integrate a **Lovable React Web** build to capitalize on advanced web animations and medical UI aesthetics.
+
+---
+
+## ⚙️ 2. How The Systems Run Together
+
+1.  **Authentication Flow:** The patient opens the App. They enter Name, Email, DOB, and Password. The Frontend sends a `POST /api/auth/register` to the Node.js Backend. The Backend hashes the password via `bcrypt`, saves the `User` via Prisma to Postgres, and returns a signed `JWT`.
+2.  **Dashboard Rendering:** The user's screen dynamically loads a "Good Morning, [Name]" medical UI. It fetches the user's past composite risk scores from the Node API to populate interactive charts.
+3.  **Module Testing:** The user executes an assessment (e.g., The Tremor test). The device captures raw X, Y, Z coordinates at 60Hz. 
+4.  **Submission:** The payload of coordinates and media files is posted to the Node.js API (`POST /api/tests/submit`). 
+5.  **Microservice Offloading:** The Node.js API saves the raw test record securely to PostgreSQL, then safely forwards the heavy mathematical payload over to the Python FastAPI microservice (`POST /ml/analyze`).
+6.  **Analysis & Results:** Python extracts the physical features, scores the risk severity, and returns the result to Node.js. Node.js updates the database, and the Frontend streams the final result back to the medical dashboard.
+
+---
+
+## 🚀 3. How to Start the Environment (Developer Guide)
+
+To run the entire system infrastructure locally, three distinct terminals are utilized:
+
+### Terminal 1: Python ML Engine
+```bash
+cd ml_service
+uvicorn main:app --reload
+```
+*Effect: ML API spins up on `http://localhost:8000`*
+
+### Terminal 2: Node.js Core Backend
+```bash
+cd backend
+npx tsc
+node dist/index.js
+```
+*Effect: Core API spins up on `http://localhost:3000` routing to your Supabase Postgres Database.*
+
+### Terminal 3: The Frontend Server
+Depending on the specific React environment (Expo or Vite/Lovable), you will run:
+```bash
+npm run dev
+# OR
+npx expo start
+```
+*Effect: The medical user interface launches on `localhost:8081` (or 5173).*
